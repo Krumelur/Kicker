@@ -40,7 +40,7 @@ def main() -> None:
 	pygame.init()
 	pygame.display.set_caption("Foosion")
 
-	pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+	screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 	#screen = pygame.display.set_mode((800, 600))
 
 	border_right_rect = pygame.Rect(0, 0, pygame.display.get_window_size()[0], 0)
