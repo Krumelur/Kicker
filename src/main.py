@@ -18,6 +18,10 @@ def main() -> None:
 		nonlocal current_gamefield
 		current_gamefield = pygame.image.load(filename)
 
+	def on_show_testfield():
+		screen.fill((255, 0, 0), pygame.Rect(0, 0, 1920, 1080))
+		screen.fill((255, 255, 255), pygame.Rect(0, 20, 1910, 1060))
+
 	def close_main_menu():
 		main_menu.close()
 		main_menu.disable()
@@ -51,6 +55,7 @@ def main() -> None:
 	debug_menu.add.range_slider('X-Offset', 0, (-100, 100), 1, rangeslider_id='x_offset', value_format=lambda x: str(int(x)), onchange=on_update_offset_x)
 	debug_menu.add.range_slider('Y-Offset', 0, (-100, 100), 1, rangeslider_id='y_offset', value_format=lambda x: str(int(x)), onchange=on_update_offset_y)
 	debug_menu.add.range_slider('Rand', 0, (0, 100), 1, rangeslider_id='border', value_format=lambda x: str(int(x)), onchange=on_update_side_border)
+	debug_menu.add.button('Test Field', on_show_testfield).set_alignment(pygame_menu.locals.ALIGN_CENTER)
 
 	main_menu = pygame_menu.Menu('Foosion - Einstellungen', 600, 300, theme=menu_theme)
 
