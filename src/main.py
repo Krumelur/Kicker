@@ -6,6 +6,15 @@ import os
 import os
 from helpers import *
 
+
+# *** Game Field Info ***
+# Relution of screen: 1920x1080
+# Top border: 20px (covered by the table)
+# Right border: 10px (covered by the table)
+# Effective resolution: 1910x1060
+# Top left corner: (0, 20)
+# Bottom right corner: (1910, 1080)
+
 		
 def main() -> None:
 	current_gamefield : Surface = None
@@ -21,6 +30,9 @@ def main() -> None:
 	def on_show_testfield():
 		screen.fill((255, 0, 0), pygame.Rect(0, 0, 1920, 1080))
 		screen.fill((255, 255, 255), pygame.Rect(0, 20, 1910, 1060))
+		screen.fill((0, 0, 0), pygame.Rect(0, 530-5, 1910, 10))
+		screen.fill((0, 0, 0), pygame.Rect(1910/2-5, 20, 10, 1060))
+
 
 	def close_main_menu():
 		main_menu.close()
@@ -44,8 +56,8 @@ def main() -> None:
 	pygame.init()
 	pygame.display.set_caption("Foosion")
 
-	screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-	#screen = pygame.display.set_mode((800, 600))
+	#screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+	screen = pygame.display.set_mode((1920, 1080))
 
 	border_right_rect = pygame.Rect(0, 0, pygame.display.get_window_size()[0], 0)
 
