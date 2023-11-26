@@ -8,12 +8,14 @@ from helpers import *
 
 
 # *** Game Field Info ***
-# Relution of screen: 1920x1080
+# Resoution of screen: 1920x1080
 # Top border: 20px (covered by the table)
 # Right border: 10px (covered by the table)
 # Effective resolution: 1910x1060
-# Top left corner: (0, 20)
-# Bottom right corner: (1910, 1080)
+# Top left corner: X = 0, Y = 20
+# Bottom right corner: X = 1910, Y = 1080
+# Center line vertical X: 955
+# Center line horizontal Y: 550
 
 		
 def main() -> None:
