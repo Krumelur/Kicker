@@ -8,21 +8,24 @@ from helpers import *
 
 
 # *** Game Field Info ***
-# Resoution of screen: 1920x1080
-# Top border: 20px (covered by the table)
-# Right border: 10px (covered by the table)
-# Effective resolution: 1910x1060
-# Top left corner: X = 0, Y = 20
-# Bottom right corner: X = 1910, Y = 1080
-# Center line vertical X: 955
-# Center line horizontal Y: 550
+#
+# Resolution of screen: 1920x1080
+#
+# Top border: 22px (covered by the table)
+# Bottom border: 0px
+# Left border: 2px (covered by the table)
+# Right border: 8px (covered by the table)
+#
+# Effective resolution: 1910x1058
+# Top left corner: X = 2, Y = 22
+# Center line vertical X: 953
+# Center line horizontal Y: 548
 
 		
 def main() -> None:
 	current_gamefield : Surface = None
 	screen : Surface
-	background_offset : pygame.Vector2 = pygame.Vector2(0, 0)
-	border_right_rect : pygame.Rect
+	background_offset : pygame.Vector2 = pygame.Vector2(2, 22)
 
 	def on_game_field_selected(title, filename):
 		print(f"Selected {title} with filename {filename}")
@@ -50,25 +53,17 @@ def main() -> None:
 		print(f"Y Offset: {value}")
 		background_offset.y = value
 
-	def on_update_side_border(value, **kwargs):
-		nonlocal border_right_rect
-		print(f"Border: {value}")
-		border_right_rect.height = value
-
 	pygame.init()
 	pygame.display.set_caption("Foosion")
 
 	#screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 	screen = pygame.display.set_mode((1920, 1080))
 
-	border_right_rect = pygame.Rect(0, 0, pygame.display.get_window_size()[0], 0)
-
 	menu_theme = pygame_menu.themes.THEME_DEFAULT.set_background_color_opacity(0.9)
 
 	debug_menu = pygame_menu.Menu('Debug', 600, 300, theme=menu_theme)
-	debug_menu.add.range_slider('X-Offset', 0, (-100, 100), 1, rangeslider_id='x_offset', value_format=lambda x: str(int(x)), onchange=on_update_offset_x)
-	debug_menu.add.range_slider('Y-Offset', 0, (-100, 100), 1, rangeslider_id='y_offset', value_format=lambda x: str(int(x)), onchange=on_update_offset_y)
-	debug_menu.add.range_slider('Rand', 0, (0, 100), 1, rangeslider_id='border', value_format=lambda x: str(int(x)), onchange=on_update_side_border)
+	debug_menu.add.range_slider('X-Offset', 2, (-100, 100), 1, rangeslider_id='x_offset', value_format=lambda x: str(int(x)), onchange=on_update_offset_x)
+	debug_menu.add.range_slider('Y-Offset', 22, (-100, 100), 1, rangeslider_id='y_offset', value_format=lambda x: str(int(x)), onchange=on_update_offset_y)
 	debug_menu.add.button('Test Field', on_show_testfield).set_alignment(pygame_menu.locals.ALIGN_CENTER)
 
 	main_menu = pygame_menu.Menu('Foosion - Einstellungen', 600, 300, theme=menu_theme)
@@ -90,10 +85,9 @@ def main() -> None:
 					main_menu.enable()
 
 		if current_gamefield is not None:
-			scaled_gamefield = pygame.transform.scale(current_gamefield, screen.get_size())
 			screen.fill((0, 0, 0))
-			screen.blit(scaled_gamefield, background_offset)
-			screen.fill((0, 0, 0), border_right_rect)
+			screen.blit(current_gamefield, background_offset)
+			screen.fill((0, 0, 0), pygame.Rect(0, 0, 1920, background_offset.y))
 
 		if main_menu.is_enabled():
 			main_menu.update(events)
