@@ -42,18 +42,24 @@ def main() -> None:
     message_updated_ticks: int = -sys.maxsize - 1
     message_visibility_seconds: int = 3
 
-    def pin_callback(channel):
+    def on_goal_player1(channel) -> None:
         print("Pin", channel, "changed to high")
+        on_update_score_player1(score_player1 + 1)
+
+    def on_goal_player2(channel) -> None:
+        print("Pin", channel, "changed to high")
+        on_update_score_player2(score_player2 + 1)
 
     def initialize_gpio() -> None:
         nonlocal gpio
         if sys.platform == "darwin":
-            gpio = MockGPIO(6)
+            gpio = MockGPIO()
         else:
-            gpio = RaspberryPiGPIO(6)
+            gpio = RaspberryPiGPIO()
 
-        gpio.add_event_detect(pin_callback)
-
+        gpio.add_event_detect(6, on_goal_player1)
+        gpio.add_event_detect(17, on_goal_player2)
+       
     def on_game_field_selected(title, filename):
         print(f"Selected {title} with filename {filename}")
         nonlocal current_gamefield
@@ -186,6 +192,7 @@ def main() -> None:
     screen_center_y = screen.get_height() / 2
     screen_height = screen.get_height()
 
+    initialize_gpio()
     on_new_game()
 
     is_running = True
