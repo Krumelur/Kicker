@@ -45,4 +45,5 @@ if __name__ == "__main__":
 	else:
 		gpio_test = RaspberryPiGPIO()
 	gpio_test.add_event_detect(6, test_pin_callback)
+	input("Press Enter to continue...")
 	gpio_test.cleanup()
