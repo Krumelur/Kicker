@@ -92,7 +92,7 @@ def main() -> None:
         main_menu.disable()
 
     def update_score(score1: int, score2: int) -> None:
-        score = f"{score1} : {score2}"
+        score = f"{score1}       :       {score2}"
 
         shadow_offset = 2
         font_size = 160
