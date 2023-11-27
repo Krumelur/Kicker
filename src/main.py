@@ -35,12 +35,12 @@ def main() -> None:
     score_surface: Surface = Surface((0, 0))
     score_border_distance_y = 70
     score_updated_ticks: int = -sys.maxsize - 1
-    score_visibility_seconds: int = 3
+    score_visibility_seconds: int = 5
     gpio: GPIOBase = None
 
     message_surface: Surface = Surface((0, 0))
     message_updated_ticks: int = -sys.maxsize - 1
-    message_visibility_seconds: int = 3
+    message_visibility_seconds: int = 5
 
     def on_goal_player1(channel) -> None:
         print("Pin", channel, "changed to high")
@@ -57,8 +57,8 @@ def main() -> None:
         else:
             gpio = RaspberryPiGPIO()
 
-        gpio.add_event_detect(27, on_goal_player1, 1000)
-        gpio.add_event_detect(6, on_goal_player2, 1000)
+        gpio.add_event_detect(27, on_goal_player1, 2000)
+        gpio.add_event_detect(6, on_goal_player2, 2000)
        
     def on_game_field_selected(title, filename):
         print(f"Selected {title} with filename {filename}")
