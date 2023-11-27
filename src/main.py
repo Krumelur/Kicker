@@ -57,8 +57,8 @@ def main() -> None:
         else:
             gpio = RaspberryPiGPIO()
 
-        gpio.add_event_detect(6, on_goal_player1)
-        gpio.add_event_detect(17, on_goal_player2)
+        gpio.add_event_detect(27, on_goal_player1)
+        gpio.add_event_detect(6, on_goal_player2)
        
     def on_game_field_selected(title, filename):
         print(f"Selected {title} with filename {filename}")
