@@ -59,7 +59,7 @@ def main() -> None:
 
         gpio.add_event_detect(27, on_goal_player1, 2000)
         gpio.add_event_detect(6, on_goal_player2, 2000)
-       
+
     def on_game_field_selected(title, filename):
         print(f"Selected {title} with filename {filename}")
         nonlocal current_gamefield
@@ -77,21 +77,24 @@ def main() -> None:
         update_message("Anpfiff!")
 
     def on_update_score_player1(value, **kwargs):
-        nonlocal score_player1
-        score_player1 = int(value)
-        update_score(score_player1, score_player2)
+        nonlocal score_player2
+        update_score(value, score_player2)
         update_message("Tor Team Blau!")
 
     def on_update_score_player2(value, **kwargs):
-        nonlocal score_player2
-        score_player2 = int(value)
-        update_score(score_player1, score_player2)
+        nonlocal score_player1
+        update_score(score_player1, value)
         update_message("Tor Team Schwarz!")
 
     def on_close_main_menu():
         main_menu.disable()
 
     def update_score(score1: int, score2: int) -> None:
+        nonlocal score_player1
+        nonlocal score_player2
+        score_player1 = score1
+        score_player2 = score2
+
         score = f"{score1}  :  {score2}"
 
         shadow_offset = 2
@@ -211,57 +214,21 @@ def main() -> None:
                 elif event.key == pygame.K_2:
                     on_update_score_player2(score_player2 + 1)
 
+		# Display gamefield background
         if current_gamefield is not None:
             screen.fill((0, 0, 0))
             screen.blit(current_gamefield, background_offset)
             screen.fill((0, 0, 0), pygame.Rect(0, 0, 1920, background_offset.y))
 
-        if (
-            pygame.time.get_ticks() - score_updated_ticks
-            < score_visibility_seconds * 1000
-        ):
-            screen.blit(
-                score_surface,
-                (
-                    screen_center_x - score_surface.get_width() / 2,
-                    background_offset.y + score_border_distance_y,
-                ),
-            )
-            screen.blit(
-                pygame.transform.rotate(score_surface, 180),
-                (
-                    screen_center_x - score_surface.get_width() / 2,
-                    screen_height
-                    - score_surface.get_height()
-                    - score_border_distance_y,
-                ),
-            )
+		# Display score
+        if pygame.time.get_ticks() - score_updated_ticks < score_visibility_seconds * 1000:
+            screen.blit(score_surface, (screen_center_x - score_surface.get_width() / 2, background_offset.y + score_border_distance_y))
+            screen.blit(pygame.transform.rotate(score_surface, 180), (screen_center_x - score_surface.get_width() / 2,screen_height- score_surface.get_height()- score_border_distance_y))
 
-        if (
-            pygame.time.get_ticks() - message_updated_ticks
-            < message_visibility_seconds * 1000
-        ):
-            screen.blit(
-                message_surface,
-                (
-                    screen_center_x - message_surface.get_width() / 2,
-                    screen_center_y - message_surface.get_height() / 2 - 100,
-                ),
-            )
-            screen.blit(
-                pygame.transform.rotate(message_surface, 180),
-                (
-                    screen_center_x - message_surface.get_width() / 2,
-                    screen_center_y - message_surface.get_height() / 2 + 100,
-                ),
-            )
-            pygame.draw.line(
-                screen,
-                (255, 255, 255),
-                (100, screen_center_y),
-                (screen.get_width() - 100, screen_center_y),
-                5,
-            )
+		# Display message
+        if pygame.time.get_ticks() - message_updated_ticks < message_visibility_seconds * 1000:
+            screen.blit(pygame.transform.rotate(message_surface, 90), (390, screen_center_y - message_surface.get_width() / 2))
+            screen.blit(pygame.transform.rotate(message_surface, 270), (1450, screen_center_y - message_surface.get_width() / 2))
 
         if main_menu.is_enabled():
             main_menu.update(events)
