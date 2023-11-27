@@ -18,7 +18,7 @@ class RaspberryPiGPIO(GPIOBase):
 
 	def add_event_detect(self, pin, callback, bouncetime=10):
 		self.GPIO.setup(pin, self.GPIO.IN, pull_up_down=self.GPIO.PUD_DOWN)
-		self.GPIO.add_event_detect(self.pin, self.GPIO.RISING, callback=callback, bouncetime=bouncetime)
+		self.GPIO.add_event_detect(pin, self.GPIO.RISING, callback=callback, bouncetime=bouncetime)
 		
 	def cleanup(self):
 		self.GPIO.cleanup()
