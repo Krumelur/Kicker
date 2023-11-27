@@ -13,15 +13,15 @@ class RaspberryPiGPIO(GPIOBase):
 	def __init__(self):
 		super().__init__()
 		import RPi.GPIO as GPIO
-		self.gpio = GPIO
-		self.gpio.setmode(self.GPIO.BCM)
+		self.GPIO = GPIO
+		self.GPIO.setmode(self.GPIO.BCM)
 
 	def add_event_detect(self, pin, callback, bouncetime=10):
-		self.gpio.setup(pin, self.GPIO.IN, pull_up_down=self.GPIO.PUD_DOWN)
-		self.gpio.add_event_detect(self.pin, self.GPIO.RISING, callback=callback, bouncetime=bouncetime)
+		self.GPIO.setup(pin, self.GPIO.IN, pull_up_down=self.GPIO.PUD_DOWN)
+		self.GPIO.add_event_detect(self.pin, self.GPIO.RISING, callback=callback, bouncetime=bouncetime)
 		
 	def cleanup(self):
-		self.gpio.cleanup()
+		self.GPIO.cleanup()
 
 
 class MockGPIO(GPIOBase):
