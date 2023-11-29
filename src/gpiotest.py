@@ -3,13 +3,13 @@ import time
 
 # Define the GPIO pins and their names
 pins = {
-    26: 'Taster 1',
-    5: 'Taster 2',
-    17: 'Taster 3',
-    13: 'Taster 4',
-    19: 'Taster 5',
-    6: 'Torsensor Schwarz',
-    27: 'Torsensor Blau'
+ 26: 'Taster 1',
+ 5: 'Taster 2',
+ 17: 'Taster 3',
+ 19: 'Taster 4',
+ 13: 'Taster 5',
+ 27: 'Torsensor Schwarz',
+ 6: 'Torsensor Blau'
 }
 
 # Set up GPIO using BCM numbering
