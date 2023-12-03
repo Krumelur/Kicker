@@ -29,11 +29,11 @@ from gpio import GPIOBase, RaspberryPiGPIO, MockGPIO
 # Tor2 GRÜN GPIO27
 #
 # Taster
-# Taster1 ORANGE GPIO5
-# Taster2 ORANGE GPIO17
-# Taster3 ORANGE GPIO13
+# Taster1 ORANGE GPIO26
+# Taster2 ORANGE GPIO5
+# Taster3 ORANGE GPIO17
 # Taster4 GELB GPIO19
-# Taster5 BRAUN GPIO26
+# Taster5 BRAUN GPIO13
 
 
 def main() -> None:
@@ -94,11 +94,12 @@ def main() -> None:
 		else:
 			gpio = RaspberryPiGPIO()
 
-		gpio.set_callback(27, on_goal_player1, 2000)
-		gpio.set_callback(6, on_goal_player2, 2000)
-		#gpio.add_event_detect(26, on_button_1, 1000)
-		#gpio.add_event_detect(5, on_button_2, 500)
-		gpio.set_callback(13, on_button_5, 1000)
+		gpio.set_callback(27, on_goal_player1, 100)
+		gpio.set_callback(6, on_goal_player2, 100)
+
+		gpio.set_callback(26, on_button_1, 100)
+		gpio.set_callback(5, on_button_2, 100)
+		gpio.set_callback(13, on_button_5, 100)
 
 	def on_game_field_selected(title, filename : string):
 		print(f"Selected {title} with filename {filename}")
