@@ -5,7 +5,6 @@ import pygame_menu
 import pygame.freetype
 from pygame import Surface
 import os
-import os
 from helpers import *
 import sys
 from gpio import GPIOBase, RaspberryPiGPIO, MockGPIO
@@ -24,10 +23,22 @@ from gpio import GPIOBase, RaspberryPiGPIO, MockGPIO
 # Top left corner: X = 2, Y = 22
 # Center line vertical X: 953
 # Center line horizontal Y: 548
+#
+# Torsensoren
+# Tor1 GRÜN GPIO6
+# Tor2 GRÜN GPIO27
+#
+# Taster
+# Taster1 ORANGE GPIO26
+# Taster2 ORANGE GPIO5
+# Taster3 ORANGE GPIO17
+# Taster4 GELB GPIO19
+# Taster5 BRAUN GPIO13
 
 
 def main() -> None:
-	current_gamefield: Surface = None
+	current_gamefield_surface: Surface = None
+	current_gamefield_filenameinfo : FilenameInfo = None
 	screen: Surface
 	background_offset: pygame.Vector2 = pygame.Vector2(2, 22)
 	score_player1: int = 0
@@ -50,6 +61,32 @@ def main() -> None:
 		print("Pin", channel, "changed to high")
 		on_update_score_player2(score_player2 + 1)
 
+	def on_button_1(channel) -> None:
+		"""
+		Button 1: show score
+		"""
+		print("Pin", channel, "changed to high")
+		update_score(score_player1, score_player2)
+
+	def on_button_2(channel) -> None:
+		"""
+		Button 2: cycle themes
+		"""
+		nonlocal current_gamefield_filenameinfo
+		current_index : int = game_fields.index(current_gamefield_filenameinfo)
+		current_index = (current_index + 1) % len(game_fields)
+		current_gamefield_filenameinfo = game_fields[current_index]
+
+		print("Pin", channel, "changed to high")
+		on_game_field_selected(current_gamefield_filenameinfo.title, current_gamefield_filenameinfo.filename)
+	
+	def on_button_5(channel) -> None:
+		"""
+		Button 5: restart game
+		"""
+		print("Pin", channel, "changed to high")
+		on_new_game()
+
 	def initialize_gpio() -> None:
 		nonlocal gpio
 		if sys.platform == "darwin":
@@ -59,13 +96,17 @@ def main() -> None:
 
 		gpio.add_event_detect(27, on_goal_player1, 2000)
 		gpio.add_event_detect(6, on_goal_player2, 2000)
+		gpio.add_event_detect(5, on_button_1, 1000)
+		gpio.add_event_detect(17, on_button_2, 500)
+		gpio.add_event_detect(26, on_button_5, 1000)
 
-	def on_game_field_selected(title, filename):
+	def on_game_field_selected(title, filename : string):
 		print(f"Selected {title} with filename {filename}")
-		nonlocal current_gamefield
-		current_gamefield = pygame.image.load(filename)
+		nonlocal current_gamefield_surface
+		current_gamefield_surface = pygame.image.load(filename)
 
 	def on_new_game():
+		pygame.mouse.set_visible(False)
 		score_player1 = 0
 		score_player2 = 0
 		update_score(score_player1, score_player2)
@@ -158,7 +199,7 @@ def main() -> None:
 		screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 
 	# Load default game field.
-	game_fields = get_game_fields()
+	game_fields : List[FilenameInfo] = get_game_fields()
 	on_game_field_selected(game_fields[0].title, game_fields[0].filename)
 
 	# Create settings menu (show using F10).
@@ -195,8 +236,6 @@ def main() -> None:
 	screen_center_y = screen.get_height() / 2
 	screen_height = screen.get_height()
 
-	pygame.mouse.set_visible(False)
-	
 	initialize_gpio()
 	on_new_game()
 
@@ -217,9 +256,9 @@ def main() -> None:
 					on_update_score_player2(score_player2 + 1)
 
 		# Display gamefield background
-		if current_gamefield is not None:
+		if current_gamefield_surface is not None:
 			screen.fill((0, 0, 0))
-			screen.blit(current_gamefield, background_offset)
+			screen.blit(current_gamefield_surface, background_offset)
 			screen.fill((0, 0, 0), pygame.Rect(0, 0, 1920, background_offset.y))
 
 		# Display score
