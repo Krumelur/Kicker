@@ -94,8 +94,8 @@ def main() -> None:
 		else:
 			gpio = RaspberryPiGPIO()
 
-		gpio.set_callback(27, on_goal_player1, 100)
-		gpio.set_callback(6, on_goal_player2, 100)
+		gpio.set_callback(27, on_goal_player1, 500)
+		gpio.set_callback(6, on_goal_player2, 500)
 
 		gpio.set_callback(26, on_button_1, 100)
 		gpio.set_callback(5, on_button_2, 100)
