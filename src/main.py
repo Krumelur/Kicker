@@ -78,7 +78,7 @@ def main() -> None:
 		current_gamefield_filenameinfo = game_fields[current_index]
 
 		print("Pin", channel, "changed to high")
-		on_game_field_selected(current_gamefield_filenameinfo.title, current_gamefield_filenameinfo.filename)
+		on_game_field_selected(current_gamefield_filenameinfo)
 	
 	def on_button_5(channel) -> None:
 		"""
@@ -101,10 +101,10 @@ def main() -> None:
 		gpio.set_callback(5, on_button_2, 100)
 		gpio.set_callback(13, on_button_5, 100)
 
-	def on_game_field_selected(title, filename : string):
-		print(f"Selected {title} with filename {filename}")
+	def on_game_field_selected(gamefield_filenameinfo: FilenameInfo):
+		print(f"Selected {gamefield_filenameinfo.title} with filename {gamefield_filenameinfo.filename}")
 		nonlocal current_gamefield_surface
-		current_gamefield_surface = pygame.image.load(filename)
+		current_gamefield_surface = pygame.image.load(gamefield_filenameinfo.filename)
 
 	def on_new_game():
 		pygame.mouse.set_visible(False)
@@ -137,7 +137,7 @@ def main() -> None:
 		score_player1 = score1
 		score_player2 = score2
 
-		score = f"{score1}  :  {score2}"
+		score = f"{score1} : {score2}"
 
 		shadow_offset = 2
 		font_size = 160
@@ -201,7 +201,8 @@ def main() -> None:
 
 	# Load default game field.
 	game_fields : List[FilenameInfo] = get_game_fields()
-	on_game_field_selected(game_fields[0].title, game_fields[0].filename)
+	current_gamefield_filenameinfo = game_fields[0]
+	on_game_field_selected(current_gamefield_filenameinfo)
 
 	# Create settings menu (show using F10).
 	menu_theme = pygame_menu.themes.THEME_DEFAULT.set_background_color_opacity(0.9)
@@ -255,6 +256,8 @@ def main() -> None:
 					on_update_score_player1(score_player1 + 1)
 				elif event.key == pygame.K_2:
 					on_update_score_player2(score_player2 + 1)
+				elif event.key == pygame.K_t:
+					on_button_2(1)
 
 		# Display gamefield background
 		if current_gamefield_surface is not None:
