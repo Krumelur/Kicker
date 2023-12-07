@@ -149,7 +149,7 @@ def main() -> None:
 		ambient_sound = pygame.mixer.Sound(
 			get_full_path("assets/sounds/Final Match Ambience.mp3")
 		)
-		#ambient_sound.play()
+		ambient_sound.play()
 		update_message("Anpfiff!")
 
 	def on_update_score_player1(value, **kwargs):
