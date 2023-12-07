@@ -7,7 +7,9 @@ from pygame import Surface
 import os
 from helpers import *
 import sys
-from gpio import GPIOBase, RaspberryPiGPIO, MockGPIO
+from gpiozero import Button
+from gpiozero import LightSensor
+import time
 
 
 # *** Game Field Info ***
@@ -52,54 +54,83 @@ def main() -> None:
 	message_surface: Surface = Surface((0, 0))
 	message_updated_ticks: int = -sys.maxsize - 1
 	message_visibility_seconds: int = 5
+	
+	goal_sensor1: LightSensor = None
+	goal_sensor2: LightSensor = None
+	button1: Button = None
+	button2: Button = None
+	button5: Button = None
+	
+	last_goal_time:float = 0.0
+	goal_debounce_seconds:float = 1.5
+	
 
-	def on_goal_player1(channel) -> None:
-		print("Pin", channel, "changed to high")
+	def on_goal_player1() -> None:
+		nonlocal last_goal_time, goal_debounce_seconds
+		print("Detected goal player 1")
+		
+		if time.time() - last_goal_time <= goal_debounce_seconds:
+			print("Ignoring goal - debounce time not reached.")
+			return
+		
+		last_goal_time = time.time()
+		
 		on_update_score_player1(score_player1 + 1)
 
-	def on_goal_player2(channel) -> None:
-		print("Pin", channel, "changed to high")
+	def on_goal_player2() -> None:
+		nonlocal last_goal_time, goal_debounce_seconds
+		print("Detected goal player 2")
+		
+		if time.time() - last_goal_time <= goal_debounce_seconds:
+			print("Ignoring goal - debounce time not reached.")
+			return
+		
+		last_goal_time = time.time()
+		
 		on_update_score_player2(score_player2 + 1)
 
-	def on_button_1(channel) -> None:
+	def on_button_1() -> None:
 		"""
 		Button 1: show score
 		"""
-		print("Pin", channel, "changed to high")
+		print("Detected button 1 pressed")
 		update_score(score_player1, score_player2)
 
-	def on_button_2(channel) -> None:
+	def on_button_2() -> None:
 		"""
 		Button 2: cycle themes
 		"""
+		print("Detected button 2 pressed")
 		nonlocal current_gamefield_filenameinfo
 		current_index : int = game_fields.index(current_gamefield_filenameinfo)
 		current_index = (current_index + 1) % len(game_fields)
 		current_gamefield_filenameinfo = game_fields[current_index]
-
-		print("Pin", channel, "changed to high")
 		on_game_field_selected(current_gamefield_filenameinfo)
 	
-	def on_button_5(channel) -> None:
+	def on_button_5() -> None:
 		"""
 		Button 5: restart game
 		"""
-		print("Pin", channel, "changed to high")
+		print("Detected button 5 pressed")
 		on_new_game()
 
 	def initialize_gpio() -> None:
-		nonlocal gpio
-		if sys.platform == "darwin":
-			gpio = MockGPIO()
-		else:
-			gpio = RaspberryPiGPIO()
-
-		gpio.set_callback(27, on_goal_player1, 100)
-		gpio.set_callback(6, on_goal_player2, 100)
-
-		gpio.set_callback(26, on_button_1, 100)
-		gpio.set_callback(5, on_button_2, 100)
-		gpio.set_callback(13, on_button_5, 100)
+		nonlocal goal_sensor1, goal_sensor2, button1, button2, button5
+		
+		goal_sensor1 = LightSensor(27, queue_len = 1, threshold = 0.8, partial = True)
+		goal_sensor1.when_dark = on_goal_player1
+		
+		goal_sensor2 = LightSensor(6, queue_len = 1, threshold = 0.8, partial = True)
+		goal_sensor2.when_dark = on_goal_player2
+		
+		button1 = Button(26, pull_up = False)
+		button1.when_pressed = on_button_1
+		
+		button2 = Button(5, pull_up = False)
+		button2.when_pressed = on_button_2
+		
+		button5 = Button(13, pull_up = False)
+		button5.when_pressed = on_button_5
 
 	def on_game_field_selected(gamefield_filenameinfo: FilenameInfo):
 		print(f"Selected {gamefield_filenameinfo.title} with filename {gamefield_filenameinfo.filename}")
@@ -290,7 +321,6 @@ def main() -> None:
 		pygame.display.flip()
 		pygame.time.Clock().tick(30)
 
-	gpio.cleanup()
 	pygame.quit()
 
 
