@@ -1,12 +1,19 @@
 from typing import List
 import os
 from collections import namedtuple
+import io
 
 FilenameInfo = namedtuple("FilenameInfo", ["title", "filename"])
 FilenameInfo.__doc__ = """
 A named tuple used to return a filename and additional properties, like a title.
 """
 
+def is_raspberrypi():
+    try:
+        with io.open('/sys/firmware/devicetree/base/model', 'r') as m:
+            if 'raspberry pi' in m.read().lower(): return True
+    except Exception: pass
+    return False
 
 def get_full_path(relative_path:str) -> str:
 	"""

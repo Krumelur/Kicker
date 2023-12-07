@@ -4,11 +4,13 @@ import pygame
 import pygame_menu
 import pygame.freetype
 from pygame import Surface
-import os
 from helpers import *
 import sys
-from gpiozero import Button
-from gpiozero import LightSensor
+
+if is_raspberrypi():
+	from gpiozero import Button
+	from gpiozero import LightSensor
+
 import time
 
 
@@ -117,20 +119,21 @@ def main() -> None:
 	def initialize_gpio() -> None:
 		nonlocal goal_sensor1, goal_sensor2, button1, button2, button5
 		
-		goal_sensor1 = LightSensor(27, queue_len = 1, threshold = 0.8, partial = True)
-		goal_sensor1.when_dark = on_goal_player1
-		
-		goal_sensor2 = LightSensor(6, queue_len = 1, threshold = 0.8, partial = True)
-		goal_sensor2.when_dark = on_goal_player2
-		
-		button1 = Button(26, pull_up = False)
-		button1.when_pressed = on_button_1
-		
-		button2 = Button(5, pull_up = False)
-		button2.when_pressed = on_button_2
-		
-		button5 = Button(13, pull_up = False)
-		button5.when_pressed = on_button_5
+		if is_raspberrypi():
+			goal_sensor1 = LightSensor(27, queue_len = 1, threshold = 0.8, partial = True)
+			goal_sensor1.when_dark = on_goal_player1
+			
+			goal_sensor2 = LightSensor(6, queue_len = 1, threshold = 0.8, partial = True)
+			goal_sensor2.when_dark = on_goal_player2
+			
+			button1 = Button(26, pull_up = False)
+			button1.when_pressed = on_button_1
+			
+			button2 = Button(5, pull_up = False)
+			button2.when_pressed = on_button_2
+			
+			button5 = Button(13, pull_up = False)
+			button5.when_pressed = on_button_5
 
 	def on_game_field_selected(gamefield_filenameinfo: FilenameInfo):
 		print(f"Selected {gamefield_filenameinfo.title} with filename {gamefield_filenameinfo.filename}")
@@ -146,7 +149,7 @@ def main() -> None:
 		ambient_sound = pygame.mixer.Sound(
 			get_full_path("assets/sounds/Final Match Ambience.mp3")
 		)
-		ambient_sound.play()
+		#ambient_sound.play()
 		update_message("Anpfiff!")
 
 	def on_update_score_player1(value, **kwargs):
