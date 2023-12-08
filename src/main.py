@@ -283,6 +283,8 @@ def main() -> None:
 
 	initialize_gpio()
 	on_new_game()
+	
+	clock = pygame.time.Clock()
 
 	is_running = True
 	while is_running:
@@ -331,8 +333,16 @@ def main() -> None:
 			update_message("Team Schwarz gewinnt!")
 
 		pygame.display.flip()
-		pygame.time.Clock().tick(30)
+		#pygame.time.Clock().tick(30)
+		clock.tick(30)
+		#print(clock.get_fps())
 
+		if goal_sensor1.is_pressed: 
+			on_goal_player1()
+
+		if goal_sensor2.is_pressed: 
+			on_goal_player2()
+			
 	pygame.quit()
 
 
