@@ -57,8 +57,8 @@ def main() -> None:
 	message_updated_ticks: int = -sys.maxsize - 1
 	message_visibility_seconds: int = 5
 	
-	goal_sensor1: LightSensor = None
-	goal_sensor2: LightSensor = None
+	goal_sensor1: Button = None
+	goal_sensor2: Button = None
 	button1: Button = None
 	button2: Button = None
 	button5: Button = None
@@ -120,11 +120,20 @@ def main() -> None:
 		nonlocal goal_sensor1, goal_sensor2, button1, button2, button5
 		
 		if is_raspberrypi():
-			goal_sensor1 = LightSensor(27, queue_len = 1, threshold = 0.8, partial = True)
-			goal_sensor1.when_dark = on_goal_player1
+			# Use Button instead of LightSensor due to sensitivity.
+			# A ball hitting the goal has such high speed that the LightSensor class fails to
+			# detect some events.
+			#goal_sensor1 = LightSensor(27, queue_len = 1, threshold = 0.9, partial = True)
+			#goal_sensor1.when_light = on_goal_player1
 			
-			goal_sensor2 = LightSensor(6, queue_len = 1, threshold = 0.8, partial = True)
-			goal_sensor2.when_dark = on_goal_player2
+			#goal_sensor2 = LightSensor(6, queue_len = 1, threshold = 0.9, partial = True)
+			#goal_sensor2.when_light = on_goal_player2
+			
+			goal_sensor1 = Button(27, pull_up = False, bounce_time = None, hold_time = 0)
+			goal_sensor1.when_pressed = on_goal_player1
+			
+			goal_sensor2 = Button(6, pull_up = False, bounce_time = None, hold_time = 0)
+			goal_sensor2.when_pressed = on_goal_player2
 			
 			button1 = Button(26, pull_up = False)
 			button1.when_pressed = on_button_1
