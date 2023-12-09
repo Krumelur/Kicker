@@ -42,6 +42,10 @@ if is_raspberrypi():
 
 
 def main() -> None:
+	referee_surface: Surface = None
+	referee_updated_ticks: int = -sys.maxsize - 1
+	referee_visibility_seconds: int = 5
+
 	current_gamefield_surface: Surface = None
 	current_gamefield_filenameinfo : FilenameInfo = None
 	screen: Surface
@@ -70,6 +74,10 @@ def main() -> None:
 
 	is_match_over = False
 	
+	def upate_referee_visual(action:str) -> None:
+		nonlocal referee_surface, referee_updated_ticks
+		referee_surface = pygame.image.load(get_full_path(f"assets/images/referee/{action}.png"))
+		referee_updated_ticks = pygame.time.get_ticks()
 
 	def on_goal_player1() -> None:
 		nonlocal last_goal_time, goal_debounce_seconds
@@ -81,6 +89,7 @@ def main() -> None:
 		
 		last_goal_time = time.time()
 		
+		upate_referee_visual("goal")
 		play_referee_sound("goal.wav")
 		play_random_sound("goal")
 		on_update_score_player1(score_player1 + 1)
@@ -95,6 +104,7 @@ def main() -> None:
 		
 		last_goal_time = time.time()
 		
+		upate_referee_visual("goal")
 		play_referee_sound("goal.wav")
 		play_random_sound("goal")
 		on_update_score_player2(score_player2 + 1)
@@ -370,6 +380,12 @@ def main() -> None:
 			screen.fill((0, 0, 0))
 			screen.blit(current_gamefield_surface, background_offset)
 			screen.fill((0, 0, 0), pygame.Rect(0, 0, 1920, background_offset.y))
+
+		# Display referee
+		if referee_surface is not None and pygame.time.get_ticks() - referee_updated_ticks < referee_visibility_seconds * 1000:
+			screen.blit(referee_surface, (screen_center_x - referee_surface.get_width() / 2, screen_center_y - referee_surface.get_height() / 2))
+		else:
+			referee_surface = None
 
 		# Display score
 		if pygame.time.get_ticks() - score_updated_ticks < score_visibility_seconds * 1000:
