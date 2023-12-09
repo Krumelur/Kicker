@@ -68,6 +68,14 @@ def main() -> None:
 	button3: Button = None
 	button4: Button = None
 	button5: Button = None
+
+	should_handle_goal1: bool = False
+	should_handle_goal2: bool = False
+	should_handle_button1: bool = False
+	should_handle_button2: bool = False
+	should_handle_button3: bool = False
+	should_handle_button4: bool = False
+	should_handle_button5: bool = False
 	
 	last_goal_time:float = 0.0
 	goal_debounce_seconds:float = 1.5
@@ -79,6 +87,10 @@ def main() -> None:
 		referee_surface = pygame.image.load(get_full_path(f"assets/images/referee/{action}.png"))
 		referee_updated_ticks = pygame.time.get_ticks()
 
+	def handle_goal_player1() -> None:
+		nonlocal should_handle_goal1
+		should_handle_goal1 = True
+	
 	def on_goal_player1() -> None:
 		nonlocal last_goal_time, goal_debounce_seconds
 		print("Detected goal player 1")
@@ -93,6 +105,10 @@ def main() -> None:
 		play_referee_sound("goal.wav")
 		play_random_sound("goal")
 		on_update_score_player1(score_player1 + 1)
+
+	def handle_goal_player2() -> None:
+		nonlocal should_handle_goal2
+		should_handle_goal2 = True
 
 	def on_goal_player2() -> None:
 		nonlocal last_goal_time, goal_debounce_seconds
@@ -109,55 +125,102 @@ def main() -> None:
 		play_random_sound("goal")
 		on_update_score_player2(score_player2 + 1)
 
-	def on_button_1() -> None:
+	def handle_button_1() -> None:
 		"""
 		Button 1: show score
 		"""
+		nonlocal should_handle_button1
+		should_handle_button1 = True
+
+	def on_button1() -> None:
 		update_score(score_player1, score_player2)
 
-	def on_button_2() -> None:
+	def handle_button_2() -> None:
 		"""
 		Button 2: cycle themes
 		"""
+		nonlocal should_handle_button2
+		should_handle_button2 = True
+
+	def on_button2() -> None:
 		nonlocal current_gamefield_filenameinfo
 		current_index : int = game_fields.index(current_gamefield_filenameinfo)
 		current_index = (current_index + 1) % len(game_fields)
 		current_gamefield_filenameinfo = game_fields[current_index]
 		on_game_field_selected(current_gamefield_filenameinfo)
 
-	def on_button_3() -> None:
+	def handle_button_3() -> None:
 		"""
 		Button 3: Goal player 1
 		"""
-		on_goal_player1()
+		nonlocal should_handle_button3
+		should_handle_button3 = True
 
-	def on_longpress_button_3() -> None:
-		"""
-		Button 3 (long press): Remove goal player 1
-		"""
-		nonlocal score_player1, score_player2
-		update_score(score_player1 - 1, score_player2)
+	def on_button3() -> None:
+		handle_goal_player1()
 
-	def on_button_4() -> None:
+	def handle_button_4() -> None:
 		"""
 		Button 4: Goal player 2
 		"""
-		on_goal_player2()
+		nonlocal should_handle_button4
+		should_handle_button4 = True
 
-
-	def on_longpress_button_4() -> None:
-		"""
-		Button 4 (long press): Remove goal player 2
-		"""
-		nonlocal score_player1, score_player2
-		update_score(score_player1, score_player2 - 1)
+	def on_button4() -> None:
+		handle_goal_player2()
 	
-	def on_button_5() -> None:
+	def handle_button_5() -> None:
 		"""
 		Button 5: restart game
 		"""
-		on_new_game()
+		nonlocal should_handle_button5
+		should_handle_button5 = True
 
+	def on_button5() -> None:
+		cleanup_gpio()
+		initialize_gpio()
+		restart_match()
+
+	def cleanup_gpio() -> None:
+		nonlocal goal_sensor1, goal_sensor2, button1, button2,  button3, button4, button5
+		
+		if is_raspberrypi():
+			if not goal_sensor1 is None:
+				goal_sensor1.when_pressed = None
+				goal_sensor1.close()
+				goal_sensor1 = None
+				
+			if not goal_sensor2 is None:
+				goal_sensor2.when_pressed = None
+				goal_sensor2.close()
+				goal_sensor2 = None
+				
+			if not button1 is None:
+				button1.when_pressed = None
+				button1.close()
+				button1 = None
+				
+			if not button2 is None:
+				button2.when_pressed = None
+				button2.close()
+				button2 = None
+				
+			if not button3 is None:
+				button3.when_pressed = None
+				button3.close()
+				button3 = None
+				
+			if not button4 is None:
+				button4.when_pressed = None
+				button4.close()
+				button4 = None
+				
+			if not button5 is None:
+				button5.when_pressed = None
+				button5.close()
+				button5 = None
+	
+	
 	def initialize_gpio() -> None:
 		nonlocal goal_sensor1, goal_sensor2, button1, button2,  button3, button4, button5
 		
@@ -172,27 +235,25 @@ def main() -> None:
 			#goal_sensor2.when_light = on_goal_player2
 			
 			goal_sensor1 = Button(27, pull_up = False, bounce_time = None, hold_time = 0)
-			goal_sensor1.when_pressed = on_goal_player1
+			goal_sensor1.when_pressed = handle_goal_player1
 			
 			goal_sensor2 = Button(6, pull_up = False, bounce_time = None, hold_time = 0)
-			goal_sensor2.when_pressed = on_goal_player2
+			goal_sensor2.when_pressed = handle_goal_player2
 			
 			button1 = Button(26, pull_up = False)
-			button1.when_pressed = on_button_1
+			button1.when_pressed = handle_button_1
 			
 			button2 = Button(5, pull_up = False)
-			button2.when_pressed = on_button_2
+			button2.when_pressed = handle_button_2
 
 			button3 = Button(17, pull_up = False, hold_time=2)
-			button3.when_pressed = on_button_3
-			button3.when_held = on_longpress_button_3
+			button3.when_pressed = handle_button_3
 
 			button4 = Button(19, pull_up = False, hold_time=2)
-			button4.when_pressed = on_button_4
-			button4.when_held = on_longpress_button_4
+			button4.when_pressed = handle_button_4
 			
 			button5 = Button(13, pull_up = False)
-			button5.when_pressed = on_button_5
+			button5.when_pressed = handle_button_5
 
 	def on_game_field_selected(gamefield_filenameinfo: FilenameInfo):
 		print(f"Selected {gamefield_filenameinfo.title} with filename {gamefield_filenameinfo.filename}")
@@ -209,7 +270,7 @@ def main() -> None:
 		fx = pygame.mixer.Sound(get_full_path(f"assets/sounds/referee/{filename}"))
 		fx.play()
 	
-	def on_new_game():
+	def restart_match():
 		nonlocal is_match_over
 		is_match_over = False
 		pygame.mouse.set_visible(False)
@@ -335,7 +396,7 @@ def main() -> None:
 		value_format=lambda x: str(int(x)),
 		onchange=on_update_score_player2,
 	)
-	main_menu.add.button("Neues Spiel", on_new_game).set_alignment(
+	main_menu.add.button("Neues Spiel", restart_match).set_alignment(
 		pygame_menu.locals.ALIGN_CENTER
 	)
 	main_menu.add.button("Zurück", on_close_main_menu).set_alignment(
@@ -348,7 +409,7 @@ def main() -> None:
 	screen_height = screen.get_height()
 
 	initialize_gpio()
-	on_new_game()
+	restart_match()
 	
 	clock = pygame.time.Clock()
 
@@ -367,13 +428,13 @@ def main() -> None:
 					on_close_main_menu()
 				elif event.key == pygame.K_1:
 					# Score player 1
-					on_goal_player1()
+					handle_goal_player1()
 				elif event.key == pygame.K_2:
 					# Score player 2
-					on_goal_player2()
+					handle_goal_player2()
 				elif event.key == pygame.K_t:
 					# Toggle background
-					on_button_2()
+					handle_button_2()
 
 		# Display gamefield background
 		if current_gamefield_surface is not None:
@@ -412,6 +473,29 @@ def main() -> None:
 			update_score(score_player1, score_player2)
 			update_message("Team Schwarz gewinnt!")
 			play_random_sound("match_over")
+
+		# Handle all input on main game loop to not update GFX on non-mein threads.
+		if should_handle_goal1:
+			on_goal_player1()
+			should_handle_goal1 = False
+		elif should_handle_goal2:
+			on_goal_player2()
+			should_handle_goal2 = False
+		elif should_handle_button1:
+			on_button1()
+			should_handle_button1 = False
+		elif should_handle_button2:
+			on_button2()
+			should_handle_button2 = False
+		elif should_handle_button3:
+			on_button3()
+			should_handle_button3 = False
+		elif should_handle_button4:
+			on_button4()
+			should_handle_button4 = False
+		elif should_handle_button5:
+			on_button5()
+			should_handle_button5 = False
 
 		pygame.display.flip()
 		#pygame.time.Clock().tick(30)
