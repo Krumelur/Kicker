@@ -1,3 +1,4 @@
+import random
 import string
 from typing import List
 import pygame
@@ -6,14 +7,13 @@ import pygame.freetype
 from pygame import Surface
 from helpers import *
 import sys
-
-if is_raspberrypi():
-	from gpiozero import Button
-	from gpiozero import LightSensor
-
 import time
 
-
+if is_raspberrypi():
+	from gpiozero import Button, Device, RPiGPIOFactory
+	# Set RPi.GPIO as the default pin factory
+	Device.pin_factory = RPiGPIOFactory()
+	
 # *** Game Field Info ***
 #
 # Resolution of screen: 1920x1080
@@ -51,8 +51,7 @@ def main() -> None:
 	score_border_distance_y = 70
 	score_updated_ticks: int = -sys.maxsize - 1
 	score_visibility_seconds: int = 5
-	gpio: GPIOBase = None
-
+	
 	message_surface: Surface = Surface((0, 0))
 	message_updated_ticks: int = -sys.maxsize - 1
 	message_visibility_seconds: int = 5
@@ -61,10 +60,14 @@ def main() -> None:
 	goal_sensor2: Button = None
 	button1: Button = None
 	button2: Button = None
+	button3: Button = None
+	button4: Button = None
 	button5: Button = None
 	
 	last_goal_time:float = 0.0
 	goal_debounce_seconds:float = 1.5
+
+	is_match_over = False
 	
 
 	def on_goal_player1() -> None:
@@ -77,6 +80,8 @@ def main() -> None:
 		
 		last_goal_time = time.time()
 		
+		play_referee_sound("goal.wav")
+		play_random_sound("goal")
 		on_update_score_player1(score_player1 + 1)
 
 	def on_goal_player2() -> None:
@@ -89,35 +94,61 @@ def main() -> None:
 		
 		last_goal_time = time.time()
 		
+		play_referee_sound("goal.wav")
+		play_random_sound("goal")
 		on_update_score_player2(score_player2 + 1)
 
 	def on_button_1() -> None:
 		"""
 		Button 1: show score
 		"""
-		print("Detected button 1 pressed")
 		update_score(score_player1, score_player2)
 
 	def on_button_2() -> None:
 		"""
 		Button 2: cycle themes
 		"""
-		print("Detected button 2 pressed")
 		nonlocal current_gamefield_filenameinfo
 		current_index : int = game_fields.index(current_gamefield_filenameinfo)
 		current_index = (current_index + 1) % len(game_fields)
 		current_gamefield_filenameinfo = game_fields[current_index]
 		on_game_field_selected(current_gamefield_filenameinfo)
+
+	def on_button_3() -> None:
+		"""
+		Button 3: Goal player 1
+		"""
+		on_goal_player1()
+
+	def on_longpress_button_3() -> None:
+		"""
+		Button 3 (long press): Remove goal player 1
+		"""
+		nonlocal score_player1, score_player2
+		update_score(score_player1, score_player2 - 1)
+
+	def on_button_4() -> None:
+		"""
+		Button 4: Goal player 2
+		"""
+		on_goal_player2()
+
+
+	def on_longpress_button_4() -> None:
+		"""
+		Button 4 (long press): Remove goal player 2
+		"""
+		nonlocal score_player1, score_player2
+		update_score(score_player1, score_player2 - 1)
 	
 	def on_button_5() -> None:
 		"""
 		Button 5: restart game
 		"""
-		print("Detected button 5 pressed")
 		on_new_game()
 
 	def initialize_gpio() -> None:
-		nonlocal goal_sensor1, goal_sensor2, button1, button2, button5
+		nonlocal goal_sensor1, goal_sensor2, button1, button2,  button3, button4, button5
 		
 		if is_raspberrypi():
 			# Use Button instead of LightSensor due to sensitivity.
@@ -140,6 +171,14 @@ def main() -> None:
 			
 			button2 = Button(5, pull_up = False)
 			button2.when_pressed = on_button_2
+
+			button3 = Button(17, pull_up = False, hold_time=2)
+			button3.when_pressed = on_button_3
+			button3.when_held = on_longpress_button_3
+
+			button4 = Button(19, pull_up = False, hold_time=2)
+			button4.when_pressed = on_button_4
+			button4.when_held = on_longpress_button_4
 			
 			button5 = Button(13, pull_up = False)
 			button5.when_pressed = on_button_5
@@ -149,16 +188,24 @@ def main() -> None:
 		nonlocal current_gamefield_surface
 		current_gamefield_surface = pygame.image.load(gamefield_filenameinfo.filename)
 
+	def play_random_sound(kind:str):
+		goal_sounds : List[FilenameInfo] = get_sounds(kind)
+		random_goal_sound : FilenameInfo = random.choice(goal_sounds)
+		fx = pygame.mixer.Sound(random_goal_sound.filename)
+		fx.play()
+
+	def play_referee_sound(filename:str):
+		fx = pygame.mixer.Sound(get_full_path(f"assets/sounds/referee/{filename}"))
+		fx.play()
+	
 	def on_new_game():
+		nonlocal is_match_over
+		is_match_over = False
 		pygame.mouse.set_visible(False)
-		score_player1 = 0
-		score_player2 = 0
-		update_score(score_player1, score_player2)
+		update_score(0, 0)
 		on_close_main_menu()
-		ambient_sound = pygame.mixer.Sound(
-			get_full_path("assets/sounds/Final Match Ambience.mp3")
-		)
-		ambient_sound.play()
+		play_random_sound("ambience")
+		play_referee_sound("kickoff.wav")
 		update_message("Anpfiff!")
 
 	def on_update_score_player1(value, **kwargs):
@@ -193,6 +240,10 @@ def main() -> None:
 		)
 
 		nonlocal score_surface
+
+		if not score_surface is None:
+			del score_surface
+		
 		score_surface = Surface(
 			(text_rect1.width + shadow_offset, text_rect1.height + shadow_offset),
 			pygame.SRCALPHA,
@@ -215,6 +266,10 @@ def main() -> None:
 		)
 
 		nonlocal message_surface
+		
+		if not message_surface is None:
+			del message_surface
+		
 		message_surface = Surface(
 			(text_rect1.width + shadow_offset, text_rect1.height + shadow_offset),
 			pygame.SRCALPHA,
@@ -237,10 +292,10 @@ def main() -> None:
 
 	screen: Surface = None
 	# On Mac run in windowed mode, on Raspberry run in fullscreen
-	if sys.platform == "darwin":
-		screen = pygame.display.set_mode((1920, 1080))
-	else:
+	if is_raspberrypi():
 		screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+	else:
+		screen = pygame.display.set_mode((1920, 1080))
 
 	# Load default game field.
 	game_fields : List[FilenameInfo] = get_game_fields()
@@ -287,6 +342,7 @@ def main() -> None:
 	clock = pygame.time.Clock()
 
 	is_running = True
+	
 	while is_running:
 		events = pygame.event.get()
 		for event in events:
@@ -294,14 +350,18 @@ def main() -> None:
 				is_running = False
 			elif event.type == pygame.KEYDOWN:
 				if event.key == pygame.K_F10:
+					# Show settings menu
 					main_menu.enable()
 				elif event.key == pygame.K_ESCAPE:
 					on_close_main_menu()
 				elif event.key == pygame.K_1:
-					on_update_score_player1(score_player1 + 1)
+					# Score player 1
+					on_goal_player1()
 				elif event.key == pygame.K_2:
-					on_update_score_player2(score_player2 + 1)
+					# Score player 2
+					on_goal_player2()
 				elif event.key == pygame.K_t:
+					# Toggle background
 					on_button_2(1)
 
 		# Display gamefield background
@@ -324,24 +384,28 @@ def main() -> None:
 			main_menu.update(events)
 			if main_menu.is_enabled():
 				main_menu.draw(screen)
-
-		if score_player1 >= 10:
+			
+		if score_player1 >= 10 and not is_match_over:
+			is_match_over = True
 			update_score(score_player1, score_player2)
 			update_message("Team Blau gewinnt!")
-		if score_player2 >= 10:
+			play_random_sound("match_over")
+		if score_player2 >= 10 and not is_match_over:
+			is_match_over = True
 			update_score(score_player1, score_player2)
 			update_message("Team Schwarz gewinnt!")
+			play_random_sound("match_over")
 
 		pygame.display.flip()
 		#pygame.time.Clock().tick(30)
 		clock.tick(30)
 		#print(clock.get_fps())
 
-		if goal_sensor1.is_pressed: 
-			on_goal_player1()
+		# if goal_sensor1.is_pressed: 
+		# 	on_goal_player1()
 
-		if goal_sensor2.is_pressed: 
-			on_goal_player2()
+		# if goal_sensor2.is_pressed: 
+		# 	on_goal_player2()
 			
 	pygame.quit()
 

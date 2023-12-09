@@ -54,3 +54,22 @@ def get_game_fields() -> List[FilenameInfo]:
 		]
 	
 	return ret
+
+def get_sounds(subfolder:str) -> List[FilenameInfo]:
+	"""
+	Returns a list of all available goal sound FX from the assets/sounds/SUBFOLDER folder (the full path is returned)
+	All WAV, OGG, and MP3 files are considered game fields.
+	"""
+	
+	assets_folder = get_full_path(f"assets/sounds/{subfolder}")
+	filenames = os.listdir(assets_folder)
+	filtered_filenames = [filename for filename in filenames if filename.lower().endswith(('.wav', '.ogg', '.mp3'))]
+	
+	ret = [
+		FilenameInfo(
+			title=os.path.splitext(full_filename)[0],
+			filename=os.path.join(assets_folder, full_filename)
+		) for full_filename in filtered_filenames
+		]
+	
+	return ret
