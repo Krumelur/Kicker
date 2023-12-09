@@ -74,7 +74,7 @@ def main() -> None:
 
 	is_match_over = False
 	
-	def upate_referee_visual(action:str) -> None:
+	def update_referee_visual(action:str) -> None:
 		nonlocal referee_surface, referee_updated_ticks
 		referee_surface = pygame.image.load(get_full_path(f"assets/images/referee/{action}.png"))
 		referee_updated_ticks = pygame.time.get_ticks()
@@ -89,7 +89,7 @@ def main() -> None:
 		
 		last_goal_time = time.time()
 		
-		upate_referee_visual("goal")
+		update_referee_visual("goal_player1")
 		play_referee_sound("goal.wav")
 		play_random_sound("goal")
 		on_update_score_player1(score_player1 + 1)
@@ -104,7 +104,7 @@ def main() -> None:
 		
 		last_goal_time = time.time()
 		
-		upate_referee_visual("goal")
+		update_referee_visual("goal_player2")
 		play_referee_sound("goal.wav")
 		play_random_sound("goal")
 		on_update_score_player2(score_player2 + 1)
