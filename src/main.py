@@ -10,7 +10,8 @@ import sys
 import time
 
 if is_raspberrypi():
-	from gpiozero import Button, Device, RPiGPIOFactory
+	from gpiozero.pins.rpigpio import RPiGPIOFactory
+	from gpiozero import Button, Device, pins
 	# Set RPi.GPIO as the default pin factory
 	Device.pin_factory = RPiGPIOFactory()
 	
@@ -125,7 +126,7 @@ def main() -> None:
 		Button 3 (long press): Remove goal player 1
 		"""
 		nonlocal score_player1, score_player2
-		update_score(score_player1, score_player2 - 1)
+		update_score(score_player1 - 1, score_player2)
 
 	def on_button_4() -> None:
 		"""
