@@ -373,7 +373,7 @@ def main() -> None:
 					on_goal_player2()
 				elif event.key == pygame.K_t:
 					# Toggle background
-					on_button_2(1)
+					on_button_2()
 
 		# Display gamefield background
 		if current_gamefield_surface is not None:
