@@ -26,8 +26,8 @@ if is_raspberrypi():
 # Center line vertical X: 953
 # Center line horizontal Y: 548
 
-PIN_GOAL1 = 22
-PIN_GOAL2 = 27
+PIN_GOAL1 = 6
+PIN_GOAL2 = 4
 PIN_BUTTON1 = 26
 PIN_BUTTON2 = 5 
 PIN_BUTTON3 = 17
@@ -407,7 +407,7 @@ def main() -> None:
 					print("Ignoring goal becuase BOTH goal sensors were triggered")
 					should_process_goal_player1 = False
 					should_process_goal_player2 = False
-					last_goal_time = time.time()
+					#last_goal_time = time.time()
 				if should_process_goal_player1:
 					should_process_goal_player1 = False
 					#print("GOAL CAUSED BY GAME LOOP")
