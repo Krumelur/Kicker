@@ -26,7 +26,7 @@ if is_raspberrypi():
 # Center line vertical X: 953
 # Center line horizontal Y: 548
 
-PIN_GOAL1 = 6
+PIN_GOAL1 = 22
 PIN_GOAL2 = 27
 PIN_BUTTON1 = 26
 PIN_BUTTON2 = 5 
@@ -74,10 +74,12 @@ def main() -> None:
 	def handle_goal_player1(channel) -> None:
 		nonlocal should_process_goal_player1
 		should_process_goal_player1 = True
+		print("Event Goal Player 1")
 
 	def handle_goal_player2(channel) -> None:
 		nonlocal should_process_goal_player2
 		should_process_goal_player2 = True
+		print("Event Goal Player 2")
 
 	def on_goal_player1() -> None:
 		nonlocal last_goal_time, goal_debounce_seconds
@@ -138,6 +140,7 @@ def main() -> None:
 	def on_button3() -> None:
 		if not should_handle_button_press():
 			return
+		print("GOAL CAUSED BY BUTTON 3")
 		on_goal_player1()
 
 	def on_button4() -> None:
@@ -351,6 +354,7 @@ def main() -> None:
 						on_close_main_menu()
 					elif event.key == pygame.K_1:
 						# Score player 1
+						print("GOAL CAUSED BY KY 1")
 						on_goal_player1()
 					elif event.key == pygame.K_2:
 						# Score player 2
@@ -397,12 +401,18 @@ def main() -> None:
 				update_message("Team Schwarz gewinnt!")
 				play_random_sound("match_over")
 
-			# Handle all input on main game loop to not update GFX on non-mein threads.
+			# Handle all input on main game loop to not update GFX on non-main threads.
 			if is_raspberrypi():
-				if should_process_goal_player1 or GPIO.input(PIN_GOAL1) == GPIO.HIGH:
+				if should_process_goal_player1 and should_process_goal_player2:
+					print("Ignoring goal becuase BOTH goal sensors were triggered")
 					should_process_goal_player1 = False
+					should_process_goal_player2 = False
+					last_goal_time = time.time()
+				if should_process_goal_player1:
+					should_process_goal_player1 = False
+					#print("GOAL CAUSED BY GAME LOOP")
 					on_goal_player1()
-				elif should_process_goal_player2 or GPIO.input(PIN_GOAL2) == GPIO.HIGH:
+				elif should_process_goal_player2:
 					should_process_goal_player2 = False
 					on_goal_player2()
 				elif GPIO.input(PIN_BUTTON1) == GPIO.LOW:
