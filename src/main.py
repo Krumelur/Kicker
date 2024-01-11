@@ -73,13 +73,26 @@ def main() -> None:
 
 	def handle_goal_player1(channel) -> None:
 		nonlocal should_process_goal_player1
-		should_process_goal_player1 = True
+		
 		print("Event Goal Player 1")
+		
+		time.sleep(0.01)
+		if GPIO.input(PIN_GOAL1) == GPIO.HIGH:
+			should_process_goal_player1 = True
+		else:
+			print("Ignoring - PIN is not high when checking in event")
+		
 
 	def handle_goal_player2(channel) -> None:
 		nonlocal should_process_goal_player2
-		should_process_goal_player2 = True
+		
 		print("Event Goal Player 2")
+		
+		time.sleep(0.01)
+		if GPIO.input(PIN_GOAL2) == GPIO.HIGH:
+			should_process_goal_player2 = True
+		else:
+			print("Ignoring - PIN is not high when checking in event")
 
 	def on_goal_player1() -> None:
 		nonlocal last_goal_time, goal_debounce_seconds
