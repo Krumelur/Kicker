@@ -63,7 +63,7 @@ def get_sounds(subfolder:str) -> List[FilenameInfo]:
 	
 	assets_folder = get_full_path(f"assets/sounds/{subfolder}")
 	filenames = os.listdir(assets_folder)
-	filtered_filenames = [filename for filename in filenames if filename.lower().endswith(('.wav', '.ogg', '.mp3'))]
+	filtered_filenames = sorted([filename for filename in filenames if filename.lower().endswith(('.wav', '.ogg', '.mp3'))])
 	
 	ret = [
 		FilenameInfo(
